@@ -144,5 +144,98 @@ def daily_JSON_to_DF(daily_JSON,daily_DF, id):
   return daily_DF
 ``` 
 
+# **Functions: Saving data from DFs to Tables on an AWS RDS Database instance on AWS Cloud**
+*   Save data in Pandas  to Database in **AWS Cloud**
+*   Saving data in the **cloud** solves **memory** and **performance** issues
+*   This enables **saving** of different **cleaned up versions** of our **data** in the **database** 
+*   This **eliminates** the need to **reclean** the data everytime I run an **analysis**
+*   **Pullling** and **Pushing Data** to a **database** is a **useful** skill to have as a Data **Analyst**/ **Scientist**
+*   Will **UPDATE** the same **database TABLE** with **knewly retrieved data** from the **API**
+
+## Function: Create a SCHEMA for POSTGRES Database in Python using SQL commands
+``` {.python}
+def create_schema(curr, schemaName, username):
+  create_schema_command = (f"""
+  CREATE SCHEMA IF NOT EXISTS "{schemaName}"
+    AUTHORIZATION {username}; 
+  """)
+
+  curr.execute(create_schema_command)
+  # commit SQL code to execute command
+  conn.commit()
+```
+## Function: Connect to db
+``` {.python}
+def connect_to_db(host_name, dbname, username, password, port):   
+  try:
+    conn = ps.connect(host=host_name, database=dbname, user=username, password=password, port=port)
+  except ps.OperationalError as e:
+    raise e
+  else:
+    print('Connected!')
+  return conn
+``` 
+
+## Connect to DB
+``` {.python}
+conn = connect_to_db(host_name, dbname, username, password, port)
+curr = conn.cursor()
+
+``` 
+
+## Create DB Components
+``` {.python}
+# Create a Schema
+create_schema(curr, "YoutubeChannel", username)
+
+# Call create_tabe fucntion to create a dailysubscribedstatusplays table in the YoutubeChannel Schema 
+sql_query = """
+"UniqueId" character varying(100) NOT NULL,
+"Day" date NOT NULL,
+    "GroupId" character varying(50) NOT NULL,
+    "SubscribedStatus" character varying(50) NOT NULL,
+    "DailyViews" integer NOT NULL,
+    "DailyAverageViewDuration" integer NOT NULL,
+    PRIMARY KEY ("UniqueId"),
+    FOREIGN KEY ("GroupId")
+        REFERENCES "YoutubeChannel".analyticsgroups ("GroupId") MATCH SIMPLE
+        ON UPDATE CASCADE
+        ON DELETE NO ACTION
+  """
+create_table(curr, "YoutubeChannel", "dailysubscribedstatusplays", sql_query, username)
+```
+
+## Function: Updating DB Tables
+``` {.python}
+
+def updateDB(curr,schemaName, tableName, primaryKey, df):
+
+  column_names = df.keys().values.tolist()
+  newDF = pd.DataFrame( columns=column_names)
+  
+  for i, row in df.iterrows():
+    valueTuple = ()
+    primaryKeyValue = row[primaryKey]
+    if check_if_item_exists_inTable(curr,schemaName, tableName, primaryKey,primaryKeyValue):  # if item exists
+      
+      for column in column_names:
+        if column != primaryKey:
+          valueTuple = valueTuple + (row[column],)
+      valueTuple = valueTuple + (row[primaryKey],)
+      update_row(curr,schemaName, tableName, primaryKey,column_names,valueTuple)
+
+    else: # if video doesn't exist
+      newDF = newDF.append(row)
+  return newDF
+
+# Update videos already existing in videos database table
+new_videos_df = updateDB(curr,"YoutubeChannel", "videos", "VideoId", videosLifetimeStats_df)
+
+``` 
+
+
+
+
+
 
 
