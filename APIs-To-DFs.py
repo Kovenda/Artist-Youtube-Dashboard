@@ -413,8 +413,8 @@ CHANNEL_ID = "---"
 #build our dataframe
 videosLifetimeStats_df = pd.DataFrame(columns=["VideoId","SongTitle","VideoTitle","VideoUploadDate","ViewCount","LikeCount","FavoriteCount","CommentCount"]) 
 videosLifetimeStats_df = get_videos(videosLifetimeStats_df)
-videosLifetimeStats_df.to_csv('/content/drive/MyDrive/Colab Notebooks/YouTube_Artist_Dashboard/videosLifetimeStats.csv')
-videosLifetimeStats_df = pd.read_csv('/content/drive/MyDrive/Colab Notebooks/YouTube_Artist_Dashboard/videosLifetimeStats')
+videosLifetimeStats_df.to_csv('---/YouTube_Artist_Dashboard/videosLifetimeStats.csv')
+videosLifetimeStats_df = pd.read_csv('---/YouTube_Artist_Dashboard/videosLifetimeStats')
 data_table.DataTable(videosLifetimeStats_df, include_index=False, num_rows_per_page=10)
 
 ### **Main:** *YouTube Analytics API*
