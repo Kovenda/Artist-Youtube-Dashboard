@@ -44,21 +44,91 @@ I built an artist Tableau Dashboard, data pulled from youtube using Youtube API 
 3. Share your Tableau Visualizations on ***Tableau Public***
 
 ## **Functions: Extracting of Data from YouTube API**
+``` {.python}
+def get_videos(df):
+  #Make first API Call
+  pageToken = ""
+  url = "https://www.googleapis.com/youtube/v3/search?key="+API_KEY+"&channelId="+CHANNEL_ID+"&part=snippet,id&order=date&maxResults=10000&"+pageToken
+
+  response = requests.get(url).json()
+  time.sleep(1)
+
+  for video in response['items']:
+    if video['id']['kind']=="youtube#video":
+      VideoId = video['id']['videoId']
+      VideoTitle = str(video['snippet']['title']).replace('&amp;',',')
+      SongTitle = songTitle(VideoTitle)
+      VideoUploadDate = str(video['snippet']['publishedAt']).split("T")[0]
+
+      #collecting view, like, dislike, comment counts
+      ViewCount,LikeCount,FavoriteCount,CommentCount = get_video_details(VideoId)
+
+      #save data in pandas df
+      df = df.append({ "VideoId":VideoId,"SongTitle": SongTitle,"VideoTitle": VideoTitle,
+                      "VideoUploadDate": VideoUploadDate,"ViewCount":ViewCount,
+                      "LikeCount":LikeCount,"FavoriteCount":FavoriteCount,"CommentCount":CommentCount}, ignore_index=True )
+  return df
+``` 
 *   Use **Python Requests Library** to make an **API** Call
 *   Make an API Call to **Youtube API**
+``` {.python}
+API_KEY = "---"
+CHANNEL_ID = "---"
+videosLifetimeStats_df = get_videos(videosLifetimeStats_df)
+``` 
 *   Collect Data as **JSON**
+``` {.python}
+url = "https://www.googleapis.com/youtube/v3/search?key="+API_KEY+"&channelId="+CHANNEL_ID+"&part=snippet,id&order=date&maxResults=10000&"+pageToken
+response = requests.get(url).json()
+``` 
 *   Save Data into a Pandas dataframe
+``` {.python}
+#build our dataframe
+videosLifetimeStats_df = pd.DataFrame(columns=["VideoId","SongTitle","VideoTitle","VideoUploadDate","ViewCount","LikeCount","FavoriteCount","CommentCount"])
+#save data in pandas df
+df = df.append({ "VideoId":VideoId,"SongTitle": SongTitle,"VideoTitle": VideoTitle,
+                "VideoUploadDate": VideoUploadDate,"ViewCount":ViewCount,
+                "LikeCount":LikeCount,"FavoriteCount":FavoriteCount,"CommentCount":CommentCount}, ignore_index=True )
+``` 
 
 ## **Functions: Extracting of Data from the YouTube Analytics API**
+``` {.python}
 
+``` 
 *   Use **Python Requests Library** to make an **API** Call
 *   Make an API Call to **Youtube Analytics API**
-*   Collect Data as **JSON**
-*   Save Data into a Pandas dataframe
+``` {.python}
+def create_groupsDailyPlays_df (group_titleAndIds_fromJSON,listOfGroupNames, analyticsGroups_release_dates, daysAfterUpload, api_service_name,api_version, client_secrets_file, scopes):
+  dimensions="day"
+  ids="channel==MINE"
+  metrics="views,comments,subscribersGained,subscribersLost,averageViewPercentage"
+  sort="day"
+  groupsDailyPlays_df = pd.DataFrame(columns=["Day","GroupId","DailyViews","DailyComments","DailySubscribersGained","DailySubscribersLost","DailyAverageViewerPercentage"]) 
+  groupsDailyPlays_df = get_groupsDailyPlays_df(dimensions,ids,metrics, sort, groupsDailyPlays_df, group_titleAndIds_fromJSON,listOfGroupNames, analyticsGroups_release_dates, daysAfterUpload, api_service_name,api_version, client_secrets_file, scopes)
+``` 
+*   Collect Data as **JSON** and save Data into a Pandas dataframe
+``` {.python}
+#Saving daily activity data in JSON to pandas dataframe
+def daily_JSON_to_DF(daily_JSON,daily_DF, id):
+  if daily_JSON['kind']== "youtubeAnalytics#resultTable":
+    for group in daily_JSON['rows']:
+      Day = group[0]
+      GroupId = id
+      DailyViews = group[1]
+      DailyComments = group[2]
+      DailySubscribersGained = group[3]
+      DailySubscribersLost = group[4]
+      DailyAverageViewerPercentage = group[5]
 
-### **Main:** *YouTube API*
-> * Main Calls for YouTube API
-> *Python code for calling the youtube API
+      #save data in pandas df
+      daily_DF = daily_DF.append({ "Day":Day,"GroupId": GroupId,"DailyViews": DailyViews,
+                      "DailyComments": DailyComments,"DailySubscribersGained":DailySubscribersGained,"DailySubscribersLost":DailySubscribersLost,"DailyAverageViewerPercentage":DailyAverageViewerPercentage}, ignore_index=True )
+  else:
+    kind = daily_JSON['kind']
+    daily_DF = f"This JSON responce kind was not youtubeAnalytics#resultTable, it was {kind}"
+  
+  return daily_DF
+``` 
 
 
 
