@@ -93,11 +93,6 @@ df = df.append({ "VideoId":VideoId,"SongTitle": SongTitle,"VideoTitle": VideoTit
 
 ## **Functions: Extracting of Data from the YouTube Analytics API**
 ``` {.python}
-
-``` 
-*   Use **Python Requests Library** to make an **API** Call
-*   Make an API Call to **Youtube Analytics API**
-``` {.python}
 def create_groupsDailyPlays_df (group_titleAndIds_fromJSON,listOfGroupNames, analyticsGroups_release_dates, daysAfterUpload, api_service_name,api_version, client_secrets_file, scopes):
   dimensions="day"
   ids="channel==MINE"
@@ -106,6 +101,25 @@ def create_groupsDailyPlays_df (group_titleAndIds_fromJSON,listOfGroupNames, ana
   groupsDailyPlays_df = pd.DataFrame(columns=["Day","GroupId","DailyViews","DailyComments","DailySubscribersGained","DailySubscribersLost","DailyAverageViewerPercentage"]) 
   groupsDailyPlays_df = get_groupsDailyPlays_df(dimensions,ids,metrics, sort, groupsDailyPlays_df, group_titleAndIds_fromJSON,listOfGroupNames, analyticsGroups_release_dates, daysAfterUpload, api_service_name,api_version, client_secrets_file, scopes)
 ``` 
+
+*   Use **Python Requests Library** to make an **API** Call
+*   Make an API Call to **Youtube Analytics API**
+``` {.python}
+# Scopes
+scopes = ["https://www.googleapis.com/auth/youtube.readonly"]
+get_groups_scopes = ["https://www.googleapis.com/auth/yt-analytics.readonly"]
+create_group_scope = ["https://www.googleapis.com/auth/youtube"]
+get_groupItems_scopes = ["https://www.googleapis.com/auth/youtube.readonly",
+          "https://www.googleapis.com/auth/yt-analytics.readonly"]
+          
+os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
+api_service_name = "youtubeAnalytics"
+api_version = "v2"
+client_secrets_file = "---/client_secret.json"
+
+dailySubscribedStatusPlays_df = create_dailySubscribedStatusPlays_df (group_titleAndIds_fromJSON, listOfGroupNames, analyticsGroups_release_dates, daysAfterUpload, api_service_name,api_version, client_secrets_file, scopes)
+``` 
+
 *   Collect Data as **JSON** and save Data into a Pandas dataframe
 ``` {.python}
 #Saving daily activity data in JSON to pandas dataframe
